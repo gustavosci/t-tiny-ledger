@@ -23,8 +23,6 @@ import java.util.List;
 @RequestMapping("/accounts")
 public class AccountsController {
 
-    // TODO HANDLE EXCEPTIONS
-
     private final AccountService accountService;
 
     @Autowired

@@ -16,8 +16,8 @@ public class LocalTransactionRepository implements TransactionRepository {
 
     @Override
     public void addTransaction(long accountNumber, Transaction transaction) {
-        // TODO: RE-EVALUATE ConcurrentLinkedDeque
-        transactionMap.computeIfAbsent(accountNumber, k -> new ConcurrentLinkedDeque<>()).add(transaction);
+        transactionMap.computeIfAbsent(accountNumber, k -> new ConcurrentLinkedDeque<>())
+                .addFirst(transaction);
     }
 
     @Override

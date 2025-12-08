@@ -6,6 +6,8 @@ import com.t.tiny.ledger.controller.dto.TransactionDTO;
 import com.t.tiny.ledger.controller.request.CreateAccountRequest;
 import com.t.tiny.ledger.controller.request.DepositRequest;
 import com.t.tiny.ledger.controller.request.WithdrawRequest;
+import com.t.tiny.ledger.exception.AccountNotFoundException;
+import com.t.tiny.ledger.exception.TinyLedgerException;
 import com.t.tiny.ledger.exception.WithdrawForbiddenException;
 import com.t.tiny.ledger.mapper.TransactionMapper;
 import com.t.tiny.ledger.model.Account;
@@ -16,6 +18,7 @@ import com.t.tiny.ledger.repository.LocalAccountRepository;
 import com.t.tiny.ledger.repository.LocalTransactionRepository;
 import com.t.tiny.ledger.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -27,6 +30,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 public class LocalAccountService implements AccountService {
 
+    private static final int MAX_ATTEMPTS_GENERATE_ACCOUNT_NUMBER = 10;
     private static final long MAX_ACCOUNT_NUMBER = 1000000000000000000L;
 
     private final AccountRepository accountRepository;
@@ -41,8 +45,7 @@ public class LocalAccountService implements AccountService {
 
     @Override
     public AccountBaseInfoDTO createAccount(CreateAccountRequest createAccountRequest) {
-        // TODO: RETRY ON CONFLICT
-        long accountNumber = ThreadLocalRandom.current().nextLong(1, MAX_ACCOUNT_NUMBER);
+        long accountNumber = generateNextAccountNumber();
         Account account = AccountMapper.fromCreateAccountRequest(accountNumber, createAccountRequest);
         accountRepository.createAccount(account);
         return AccountMapper.toBaseInfoDTO(account);
@@ -84,6 +87,9 @@ public class LocalAccountService implements AccountService {
         Account account = accountRepository.getAccount(accountNumber);
 
         synchronized (account) {
+            if (withdrawRequest.amount().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new WithdrawForbiddenException("Invalid amount to withdraw. Must be positive.");
+            }
             if (account.getBalance().compareTo(withdrawRequest.amount()) < 0) {
                 throw new WithdrawForbiddenException("Insufficient balance.");
             }
@@ -104,11 +110,26 @@ public class LocalAccountService implements AccountService {
 
     @Override
     public List<TransactionDTO> getTransactions(long accountNumber) {
-        // TODO ONLY VERIFY IF IT EXISTS
-        Account account = accountRepository.getAccount(accountNumber);
+        boolean accountExists = accountRepository.exists(accountNumber);
+        if (!accountExists) {
+            throw new AccountNotFoundException(accountNumber);
+        }
 
-        // TODO: NOT RETURNING IN STACK ORDER
         Collection<Transaction> transactions = transactionRepository.getTransactions(accountNumber);
         return TransactionMapper.toListOfTransactionDTO(transactions);
+    }
+
+    private long generateNextAccountNumber() {
+        int attempts = 0;
+        while (attempts < MAX_ATTEMPTS_GENERATE_ACCOUNT_NUMBER) {
+            long accountNumber = ThreadLocalRandom.current().nextLong(1, MAX_ACCOUNT_NUMBER);
+            if (!accountRepository.exists(accountNumber)) {
+                return accountNumber;
+            }
+            attempts++;
+        }
+
+        throw new TinyLedgerException(HttpStatus.INTERNAL_SERVER_ERROR,
+                "Unable to find available account number after " + MAX_ATTEMPTS_GENERATE_ACCOUNT_NUMBER + " attempts.");
     }
 }

@@ -14,10 +14,14 @@ public class LocalAccountRepository implements AccountRepository {
 
     private final Map<Long, Account> accountMap = new ConcurrentHashMap<>();
 
-    // TODO: WHEN TO USE METHOD OR BLOCK SYNCHRONIZED?
+    @Override
+    public boolean exists(long accountNumber) {
+        return accountMap.containsKey(accountNumber);
+    }
+
     @Override
     public synchronized void createAccount(Account account) {
-        if (accountMap.containsKey(account.getAccountNumber())) {
+        if (exists(account.getAccountNumber())) {
             throw new AccountAlreadyExistsException(account.getAccountNumber());
         }
 
@@ -32,6 +36,10 @@ public class LocalAccountRepository implements AccountRepository {
 
     @Override
     public void updateAccount(Account account) {
+        if (!exists(account.getAccountNumber())) {
+            throw new AccountNotFoundException(account.getAccountNumber());
+        }
+
         accountMap.put(account.getAccountNumber(), account);
     }
 }

@@ -30,12 +30,36 @@ public interface AccountService {
      */
     AccountBaseInfoDTO getAccountInfo(long accountNumber);
 
+    /**
+     * Retrieves the balance of the account with the given account number.
+     *
+     * @param accountNumber the unique identifier of the account
+     * @return the account balance
+     */
     AccountBalanceDTO getAccountBalance(long accountNumber);
 
+    /**
+     * Deposits a certain amount into the specified account.
+     *
+     * @param accountNumber the unique identifier of the account
+     * @param depositRequest the request object containing deposit details
+     */
     void deposit(long accountNumber, DepositRequest depositRequest);
 
+    /**
+     * Withdraws a certain amount from the specified account.
+     *
+     * @param accountNumber the unique identifier of the account
+     * @param withdrawRequest the request object containing withdrawal details
+     */
     void withdraw(long accountNumber, WithdrawRequest withdrawRequest);
 
+    /**
+     * Retrieves the transaction history for the specified account.
+     *
+     * @param accountNumber the unique identifier of the account
+     * @return a list of transactions
+     */
     List<TransactionDTO> getTransactions(long accountNumber);
 }
 
