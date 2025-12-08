@@ -1,0 +1,8 @@
+package com.t.tiny.ledger.controller;
+
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class TransactionsController {
+
+}
