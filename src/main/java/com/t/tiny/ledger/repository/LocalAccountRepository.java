@@ -12,11 +12,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @Repository
 public class LocalAccountRepository implements AccountRepository {
 
-    private final Map<Long, Account> accountMap = new ConcurrentHashMap<>();
+    private final Map<Long, Account> accounts = new ConcurrentHashMap<>();
 
     @Override
     public boolean exists(long accountNumber) {
-        return accountMap.containsKey(accountNumber);
+        return accounts.containsKey(accountNumber);
     }
 
     @Override
@@ -25,12 +25,12 @@ public class LocalAccountRepository implements AccountRepository {
             throw new AccountAlreadyExistsException(account.getAccountNumber());
         }
 
-        accountMap.put(account.getAccountNumber(), account);
+        accounts.put(account.getAccountNumber(), account);
     }
 
     @Override
     public Account getAccount(long accountNumber) {
-        return Optional.ofNullable(accountMap.get(accountNumber))
+        return Optional.ofNullable(accounts.get(accountNumber))
                 .orElseThrow(() -> new AccountNotFoundException(accountNumber));
     }
 
@@ -40,6 +40,6 @@ public class LocalAccountRepository implements AccountRepository {
             throw new AccountNotFoundException(account.getAccountNumber());
         }
 
-        accountMap.put(account.getAccountNumber(), account);
+        accounts.put(account.getAccountNumber(), account);
     }
 }

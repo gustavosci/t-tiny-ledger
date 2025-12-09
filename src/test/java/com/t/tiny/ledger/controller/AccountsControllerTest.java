@@ -40,7 +40,7 @@ class AccountsControllerTest {
     void validateAccountLifecycle() throws Exception {
         // 1. Create Account
         CreateAccountRequest createAccountRequest = new CreateAccountRequest(
-                "John Doe",
+                "Gustavo Santos",
                 LocalDate.of(1992, 10, 27),
                 "Street ABC N 90"
         );
@@ -50,7 +50,7 @@ class AccountsControllerTest {
                         .content(objectMapper.writeValueAsString(createAccountRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.accountNumber").exists())
-                .andExpect(jsonPath("$.fullName").value("John Doe"))
+                .andExpect(jsonPath("$.fullName").value("Gustavo Santos"))
                 .andExpect(jsonPath("$.dateOfBirth").value("1992-10-27"))
                 .andExpect(jsonPath("$.address").value("Street ABC N 90"))
                 .andReturn();
@@ -62,7 +62,7 @@ class AccountsControllerTest {
         mockMvc.perform(get("/accounts/{accountNumber}", accountNumber))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accountNumber").value(accountNumber))
-                .andExpect(jsonPath("$.fullName").value("John Doe"))
+                .andExpect(jsonPath("$.fullName").value("Gustavo Santos"))
                 .andExpect(jsonPath("$.dateOfBirth").value("1992-10-27"))
                 .andExpect(jsonPath("$.address").value("Street ABC N 90"));
 
@@ -70,7 +70,7 @@ class AccountsControllerTest {
         mockMvc.perform(get("/accounts/{accountNumber}/balance", accountNumber))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accountNumber").value(accountNumber))
-                .andExpect(jsonPath("$.fullName").value("John Doe"))
+                .andExpect(jsonPath("$.fullName").value("Gustavo Santos"))
                 .andExpect(jsonPath("$.balance").value("0.0"));
 
         // 4. Deposit money

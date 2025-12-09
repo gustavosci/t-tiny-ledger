@@ -12,16 +12,17 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 @Repository
 public class LocalTransactionRepository implements TransactionRepository {
 
-    private final Map<Long, Deque<Transaction>> transactionMap = new ConcurrentHashMap<>();
+    // IF SEARCH BY TIMESTAMP SHOULD BE SUPPORTED, USE A NavigableMap INSTEAD OF Deque
+    private final Map<Long, Deque<Transaction>> ledger = new ConcurrentHashMap<>();
 
     @Override
     public void addTransaction(long accountNumber, Transaction transaction) {
-        transactionMap.computeIfAbsent(accountNumber, k -> new ConcurrentLinkedDeque<>())
+        ledger.computeIfAbsent(accountNumber, k -> new ConcurrentLinkedDeque<>())
                 .addFirst(transaction);
     }
 
     @Override
     public Collection<Transaction> getTransactions(long accountNumber) {
-        return transactionMap.getOrDefault(accountNumber, new ConcurrentLinkedDeque<>());
+        return ledger.getOrDefault(accountNumber, new ConcurrentLinkedDeque<>());
     }
 }
